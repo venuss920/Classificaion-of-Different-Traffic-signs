@@ -7,7 +7,7 @@
 import random
 import pickle
 import numpy as np
-import matplotlib.pyplot as plot
+import matplotlib.pyplot as plt
 import keras
 from keras.models import Sequential
 from keras.layers import Dense,Dropout,Flatten
@@ -138,14 +138,14 @@ print(y_validation)
 def models():
     model = Sequential()
 #Convolutional Layer
-    model.add(Conv2D(filters =60, kernel_size = (3,3), input_shape = (32,32,1),activation = 'relu'))
+    model.add(Conv2D(filters =60, kernel_size = (5,5), input_shape = (32,32,1),activation = 'relu'))
     model.add(Conv2D(filters =60, kernel_size = (3,3),activation = 'relu'))
 #Pooling Layer.
-    model.add(MaxPool2D(pool_size =(3,3)))
+    model.add(MaxPooling2D(pool_size =(2,2)))
     
-    model.add(Conv2D(filters = 40, kernel_size = (3,3), input_shape = (32,32,1),activation = 'relu'))
-    model.add(Conv2D(filters = 40, kernel_size = (3,3),activation = 'relu'))
-    model.add(MaxPool2D(pool_size =(3,3)))
+    model.add(Conv2D(filters = 50, kernel_size = (5,5), input_shape = (32,32,1),activation = 'relu'))
+    model.add(Conv2D(filters = 50, kernel_size = (3,3),activation = 'relu'))
+    model.add(MaxPooling2D(pool_size =(2,2)))
     model.add(Dropout(0.5))
 
     
@@ -180,10 +180,6 @@ plt.title('Accuracy')
 plt.xlabel('epoch')  
 #Problems Occured
 
-#1. Overfitting, training accuracy > validation accuracy
-#2. Tough on the Traffic sign dataset because the reasons are as follows:
-#3. Comparitively less data, high number of classes to predict, unstructured/not uniform no. of samples in each classes can be visualised in the bar graph.
 
-#4. Try to fine tune the model.
 
-#FINE TUNING = TASK DEPENDENCE
+           
