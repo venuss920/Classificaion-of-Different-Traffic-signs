@@ -1,0 +1,189 @@
+#TRAFFIC SIGN CLASSIFICATION EXAMPLE:
+!git clone https://bitbucket.org/jadslim/german-traffic-signs
+
+#IMAGE PREPROCESSING, CNN IMPLENTATION, FINE TUNING
+
+#1. DATA INITIALIZATION
+import random
+import pickle
+import numpy as np
+import matplotlib.pyplot as plot
+import keras
+from keras.models import Sequential
+from keras.layers import Dense,Dropout,Flatten
+from keras.optimizers import Adam
+from keras.models import Sequential
+from keras.utils.np_utils import to_categorical
+from keras.layers.convolutional import Conv2D, MaxPooling2D  # 2 dimensional x,y or can be CONV3D also Tensor computation.
+import pandas as pd
+from keras.preprocessing.image import ImageDataGenerator
+import cv2 as cv
+np.random.seed(0) 
+
+
+def unpickeling():
+    with open('C:\\Users\\Shah\\Desktop\\german-traffic-signs\\train.p','rb') as g:
+        training_data = pickle.load(g)
+    with open('C:\\Users\\Shah\\Desktop\\german-traffic-signs\\valid.p','rb') as m:
+        validation_data = pickle.load(m)
+    with open('C:\\Users\\Shah\\Desktop\\german-traffic-signs\\test.p','rb') as d:
+        testing_data = pickle.load(d)
+# print(type(training_data))
+# print(np.shape(training_data)) #no a tuple thats why no value showing while printing.
+# print(training_data.keys())
+# print(training_data.values())
+    return training_data,validation_data, testing_data
+training_data,validation_data, testing_data = unpickeling()
+
+
+#Dictonaries , so extracting and storing the values using keys/values , dictionary = {key: values}
+
+x_train, y_train = training_data['features'],training_data['labels']
+x_validation, y_validation = validation_data['features'], validation_data['labels']
+x_test, y_test= testing_data['features'],testing_data['labels']
+
+
+
+def printing_shapes():  #Structured Dataset/ also can be unstructured.
+    print(np.shape(x_train), "TRAINING_DATA")
+    print(np.shape(y_train), "TRAINING_DATA")
+    print(np.shape(x_validation), "validation_DATA")
+    print(np.shape( y_validation), "validation_DATA")
+    print(np.shape(x_test), "Testing_DATA")
+    print(np.shape(y_test), "Testing_DATA")
+printing_shapes()
+
+
+def checking_shapes():  #CHECKING/DEBUGGING CODE THAT THE DATA OR IMAGES ARE WELL STRCTURED OR NOT              
+    assert(x_train.shape[0] == y_train.shape[0]), 'Not well structured data, please check the shape'
+    assert(x_validation.shape[0] == y_validation.shape[0]), 'Not well structured data, please check the shape'
+    assert(x_test.shape[0] == y_test.shape[0]), 'Not well structured data, please check the shape'
+    assert(x_train.shape[1:] == (32,32,3)),     'Not well structured data, please check the shape'
+    assert(x_validation.shape[1:] == (32,32,3)), 'Not well structured data, please check the shape'
+    assert(x_test.shape[1:] == (32,32,3)),      'Not well structured data, please check the shape'
+checking_shapes() 
+
+def analysis():      #data analysis, reading the data using pandas library.
+    data = pd.read_csv('C:\\Users\\Shah\\Desktop\\german-traffic-signs\\signnames.csv')
+    print(data.head())
+    print(data.tail())
+    return data
+data = analysis() 
+#print(data)
+
+def plotting(): #plotting the data for the visualization.
+    num_of_samples=[]
+    cols = 5
+    num_classes = 43
+    fig, axs = plt.subplots(nrows=num_classes, ncols=cols, figsize=(5,50))
+    fig.tight_layout()
+    for i in range(cols):
+        for j,row in data.iterrows():
+            x_selected = x_train[y_train == j]
+            axs[j][i].imshow(x_selected[random.randint(0,(len(x_selected) - 1)), :, :], cmap=plt.get_cmap('gray'))
+            axs[j][i].axis("off")
+            if i == 2:
+                axs[j][i].set_title(str(j) + " - " + row["SignName"])
+                num_of_samples.append(len(x_selected))
+    print(num_of_samples)
+    plt.figure(figsize=(12, 4))
+    plt.bar(range(0, num_classes), num_of_samples)
+    plt.title("Distribution of the train dataset")
+    plt.xlabel("Class number")
+    plt.ylabel("Number of images")
+    plt.show()
+plotting() 
+
+
+#PREPROCESSSS.....
+def preprocess_equalise(image):
+    im = cv.cvtColor(image, cv.COLOR_BGR2GRAY)      # good distribution of the intensities in images = histogram equalisation, 
+    img_hist = cv.equalizeHist(im)                                                    #histequalize just accepts grayscale images, because it has no depth, RGB....                                                  #good for feature extraction when neural network will be applied.   
+    return img_hist
+img_hist = preprocess_equalise(x_train[1000])
+plt.imshow(img_hist, cmap = 'gray')
+
+
+def preprocess_all(image):
+    image = preprocess_equalise(image)
+    image = image/255
+    return image
+x_train = np.array(list(map(preprocess_all,x_train)))
+x_test =  np.array(list(map(preprocess_all,x_test)))
+x_validation = np.array(list(map(preprocess_all,x_validation)))
+
+#plt.imshow(x_train[random.randint(0, len(x_train) -1)],cmap = 'gray')
+
+# RESHAPPING
+x_train = x_train.reshape((34799, 32, 32, 1))
+x_test = x_test.reshape((12630, 32, 32, 1))
+x_validation = x_validation.reshape((4410, 32, 32, 1))
+
+print(x_train.shape)
+print(x_test.shape)
+print(x_validation.shape)
+
+
+#ONE HOT ENCODING.
+y_train = to_categorical(y_train,43)
+y_test = to_categorical(y_test,43)
+y_validation = to_categorical(y_validation,43)
+    
+
+
+print(y_train)
+print(y_test)
+print(y_validation)
+
+def models():
+    model = Sequential()
+#Convolutional Layer
+    model.add(Conv2D(filters =60, kernel_size = (3,3), input_shape = (32,32,1),activation = 'relu'))
+    model.add(Conv2D(filters =60, kernel_size = (3,3),activation = 'relu'))
+#Pooling Layer.
+    model.add(MaxPool2D(pool_size =(3,3)))
+    
+    model.add(Conv2D(filters = 40, kernel_size = (3,3), input_shape = (32,32,1),activation = 'relu'))
+    model.add(Conv2D(filters = 40, kernel_size = (3,3),activation = 'relu'))
+    model.add(MaxPool2D(pool_size =(3,3)))
+    model.add(Dropout(0.5))
+
+    
+#2D to 1D
+    model.add(Flatten())
+  
+    model.add(Dense(500, activation = 'relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(43, activation = 'softmax'))             #softmax for multiclass classification
+    model.compile(Adam(lr = 0.001),loss = 'categorical_crossentropy',metrics = ['accuracy'])
+    model.summary()
+                 
+    return model
+    
+model = models()
+
+history = model.fit(x_train,y_train,epochs = 10,validation_data=(x_validation,y_validation), batch_size = 400, verbose = 1, shuffle = 1)
+evaluation = model.evaluate(x_test,y_test, verbose = 0)  
+    
+print('Test evaluation',evaluation[0])
+print('Test accuracy',evaluation[1])
+    
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Loss')
+plt.xlabel('epoch')
+ 
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.legend(['training','test'])
+plt.title('Accuracy')
+plt.xlabel('epoch')  
+#Problems Occured
+
+#1. Overfitting, training accuracy > validation accuracy
+#2. Tough on the Traffic sign dataset because the reasons are as follows:
+#3. Comparitively less data, high number of classes to predict, unstructured/not uniform no. of samples in each classes can be visualised in the bar graph.
+
+#4. Try to fine tune the model.
+
+#FINE TUNING = TASK DEPENDENCE
