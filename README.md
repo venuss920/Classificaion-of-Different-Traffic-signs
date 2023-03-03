@@ -1,4 +1,4 @@
-# Classificaion-of-Different-Traffic-signs
+# Classificaion-of-Different-Traffic-signs, SOFTWARE: PYTHON
 
 Problems Occured.
 1. Overfitting, training accuracy > validation accuracy
