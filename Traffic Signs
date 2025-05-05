@@ -178,7 +178,7 @@ plt.plot(history.history['val_accuracy'])
 plt.legend(['training','test'])
 plt.title('Accuracy')
 plt.xlabel('epoch')  
-#Problems Occured
+
 
 
 
