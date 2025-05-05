@@ -1,6 +1,5 @@
-# Classificaion-of-Different-Traffic-signs, 
+# a MULTICLASS-Classificaion-of-Different-Traffic-signs, 
 
-SOFTWARE: PYTHON
 
 Problems Occured.
 1. Overfitting, training accuracy > validation accuracy
@@ -19,9 +18,5 @@ Epoch 15/15
 -Test accuracy 0.9555027484893799
 
 
-
 FINE TUNING = TASK DEPEDENCY
 
-
-REFERENCES:
-{The Complete Self-Driving Car Course - Applied Deep Learning}(https://www.udemy.com/course/applied-deep-learningtm-the-complete-self-driving-car-course/learn/lecture/11304072#overview)
